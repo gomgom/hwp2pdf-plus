@@ -13,6 +13,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
+[assembly: AssemblyTitle("hwp2pdf+")]
+[assembly: AssemblyProduct("hwp2pdf+ (HWP to PDF Plus)")]
+[assembly: AssemblyDescription("HWP/HWPX → PDF 일괄 변환기")]
+[assembly: AssemblyCompany("gomgom")]
+[assembly: AssemblyCopyright("Copyright (c) 2026 gomgom")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+
 namespace Hwp2PdfPlus
 {
     // 늦은 바인딩 래퍼: HWPFrame.HwpObject 를 IDispatch 로만 호출
