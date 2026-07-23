@@ -1,0 +1,51 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build hwp2pdf-plus.exe
+        shell: pwsh
+        run: |
+          $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+          if (-not (Test-Path $csc)) { throw "csc not found: $csc" }
+          & $csc /nologo /target:winexe /codepage:65001 /win32icon:res\app.ico /resource:res\app.ico,app.ico /out:hwp2pdf-plus.exe Program.cs
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path hwp2pdf-plus.exe)) { throw "build failed" }
+          $v = [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Resolve-Path hwp2pdf-plus.exe))
+          Write-Host "Built $($v.ProductName) $($v.FileVersion)"
+
+      # SignPath 서명 스텝은 승인·설정 후 여기에 추가합니다.
+      # (빌드된 hwp2pdf-plus.exe를 SignPath에 제출 → 서명된 exe를 내려받아 이후 스텝에서 사용)
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hwp2pdf-plus
+          path: hwp2pdf-plus.exe
+          if-no-files-found: error
+
+      - name: Publish to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag hwp2pdf-plus.exe --clobber
+          } else {
+            gh release create $tag hwp2pdf-plus.exe --generate-notes --title "hwp2pdf+ $($tag.TrimStart('v'))"
+          }
