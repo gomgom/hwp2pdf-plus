@@ -1,0 +1,15 @@
+# 빌드 산출물 (Releases에 첨부, 소스에는 커밋하지 않음)
+*.exe
+*.pdb
+bin/
+obj/
+
+# 변환 결과물 / 테스트 파일
+*.pdf
+
+# OS 잡파일
+Thumbs.db
+desktop.ini
+
+# 원본 psd
+res/icon.psd
