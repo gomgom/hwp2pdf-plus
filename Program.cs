@@ -18,8 +18,8 @@ using System.Windows.Forms;
 [assembly: AssemblyDescription("HWP/HWPX → PDF 일괄 변환기")]
 [assembly: AssemblyCompany("gomgom")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 gomgom")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]
 
 namespace Hwp2PdfPlus
 {
@@ -44,17 +44,52 @@ namespace Hwp2PdfPlus
             return _type.InvokeMember(name, BindingFlags.InvokeMethod, null, _hwp, args);
         }
 
+        // 임의의 COM 객체(액션·파라미터 셋 등)에 대한 늦은 바인딩 호출
+        private static object InvokeOn(object obj, string name, params object[] args)
+        {
+            return obj.GetType().InvokeMember(name, BindingFlags.InvokeMethod, null, obj, args);
+        }
+
         public bool Convert(string src, string pdf)
         {
             bool opened = (bool)Invoke("Open", src, "", "forceopen:true");
             if (!opened) return false;
             try
             {
+                // PrintToPDFEx가 기존 파일에 덮어쓰기 프롬프트를 띄우지 않도록 미리 삭제
+                try { if (File.Exists(pdf)) File.Delete(pdf); } catch { }
+
+                // 가상 인쇄(PrintToPDFEx) + 기본값 로드(GetDefault)로 항상 문서 전체를 출력한다.
+                // SaveAs 필터는 한/글에 저장된 "마지막 변환 범위·모아찍기"를 물려받아
+                // 일부 페이지만 나오는 문제가 있어(예: 직전에 2쪽만 인쇄하면 이후에도 2쪽만 나옴)
+                // 사용하지 않는다. GetDefault는 공장 기본값(문서 전체)을 채우므로 잔존 설정을 무시한다.
+                if (SaveAsPdfFullDocument(pdf)) return true;
+
+                // 폴백: PrintToPDFEx 실패 시(예: "Hancom PDF" 프린터 부재) 기존 방식으로라도 저장
                 return (bool)Invoke("SaveAs", pdf, "PDF", "");
             }
             finally
             {
                 Invoke("Run", "FileClose");
+            }
+        }
+
+        private bool SaveAsPdfFullDocument(string pdf)
+        {
+            try
+            {
+                object act = Invoke("CreateAction", "PrintToPDFEx");
+                object set = InvokeOn(act, "CreateSet");
+                InvokeOn(act, "GetDefault", set);
+                InvokeOn(set, "SetItem", "PrinterName", "Hancom PDF");
+                InvokeOn(set, "SetItem", "FileName", pdf);
+                InvokeOn(set, "SetItem", "PrintMethod", 0); // 모아찍기(N-up) 해제
+                object r = InvokeOn(act, "Execute", set);
+                return r is bool && (bool)r && File.Exists(pdf);
+            }
+            catch
+            {
+                return false;
             }
         }
 
