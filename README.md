@@ -6,6 +6,9 @@
 
 **HWP to PDF Plus** — 여러 개의 HWP·HWPX 파일을 한 번에 PDF로 변환하는 Windows 도구
 
+<sub>Batch-convert Hangul (HWP/HWPX) documents to PDF on Windows — drag & drop or CLI.<br>
+Free for personal, business, and public use. Requires Hancom Office Hangul 2010 SE or later.</sub>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
 ![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.x-512BD4.svg)
