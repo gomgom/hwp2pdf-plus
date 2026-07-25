@@ -71,9 +71,11 @@ Windows 11에서 **"스마트 앱 컨트롤이 안전하지 않을 수 있는 �
 1. `hwp2pdf-plus.exe` 실행.
 2. HWP·HWPX 파일이나 폴더를 창에 **드래그 & 드롭** (또는 `[파일 추가]`).
 3. `[PDF 변환]` 클릭.
-4. **PDF는 각 원본 파일과 같은 위치에 생성**됩니다.
+4. **PDF는 각 원본 파일과 같은 위치에 생성**됩니다. (아래 `출력 폴더 선택`으로 바꿀 수 있음)
 
 - `기존 PDF 덮어쓰기` 체크 시 같은 이름의 PDF가 있어도 다시 만듭니다(기본값은 건너뜀).
+- `출력 폴더 선택`을 체크하고 `[폴더 선택]`으로 폴더를 지정하면, PDF를 원본 옆이 아니라 **그 폴더에 모아서** 저장합니다.
+- `현재 저장된 PDF 설정으로 출력`을 체크하면 한/글에 저장된 PDF 설정(변환 범위 등)을 그대로 사용합니다. 기본값은 **항상 문서 전체**를 출력합니다.
 - 목록에서 항목을 선택하고 `Delete` 키로 제거할 수 있습니다.
 
 ### CLI
@@ -93,13 +95,21 @@ hwp2pdf-plus.exe "C:\문서폴더"
 
 ## 소스 빌드
 
-.NET Framework에 포함된 C# 컴파일러로 단일 파일을 빌드합니다.
+Windows에 기본 포함된 .NET Framework의 C# 컴파일러만 사용합니다. **NuGet·외부 라이브러리가 필요 없습니다.**
 
 ```bat
-csc.exe /target:winexe /codepage:65001 /win32icon:res\app.ico /resource:res\app.ico,app.ico /out:hwp2pdf-plus.exe Program.cs
+powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-`csc.exe`는 보통 `C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe`에 있습니다.
+`build.ps1`이 `csc.exe`와 WPF 어셈블리를 찾아 `hwp2pdf-plus.exe` 하나를 만듭니다.
+
+구성 파일:
+
+| 파일 | 역할 |
+|---|---|
+| `Program.cs` | 진입점, 한/글 오토메이션 연동, 화면 동작, CLI 모드 |
+| `ui/MainWindow.xaml` | 화면 디자인 (실행 시 `XamlReader`로 로드되도록 exe에 임베드) |
+| `res/app.ico` | 앱 아이콘 |
 
 ## 동작 원리
 

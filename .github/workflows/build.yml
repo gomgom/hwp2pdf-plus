@@ -19,12 +19,8 @@ jobs:
       - name: Build hwp2pdf-plus.exe
         shell: pwsh
         run: |
-          $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-          if (-not (Test-Path $csc)) { throw "csc not found: $csc" }
-          & $csc /nologo /target:winexe /codepage:65001 /win32icon:res\app.ico /resource:res\app.ico,app.ico /out:hwp2pdf-plus.exe Program.cs
-          if ($LASTEXITCODE -ne 0 -or -not (Test-Path hwp2pdf-plus.exe)) { throw "build failed" }
-          $v = [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Resolve-Path hwp2pdf-plus.exe))
-          Write-Host "Built $($v.ProductName) $($v.FileVersion)"
+          ./build.ps1
+          if (-not (Test-Path hwp2pdf-plus.exe)) { throw "build failed" }
 
       # SignPath 서명 스텝은 승인·설정 후 여기에 추가합니다.
       # (빌드된 hwp2pdf-plus.exe를 SignPath에 제출 → 서명된 exe를 내려받아 이후 스텝에서 사용)
